@@ -1,13 +1,327 @@
+
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <h1>Hello electron!</h1>
-    We are using node <script>document.write(process.versions.node)</script>,
-    Chrome <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
-  </body>
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <script type = "text/javascript"  src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js">
+   </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+  <title> simple note</title>
+  <style>
+  div.container {
+    width: 100%;
+    height: :100%
+    border: 3px solid grey;
+}
+
+div.panel{
+  width: 200px;
+
+}
+div.panel-body{
+overflow-y: scroll;
+width: 200px ;
+height: 200px;
+
+}
+
+header, footer {
+    padding: 1em;
+    color: white;
+    background-color: lightgrey;
+    clear: left;
+    text-align: center;
+    width: auto;
+    height: auto;
+}
+
+
+
+nav {
+  border-left:groove lightgray;
+  border-right:groove lightgray;
+    float: left;
+    max-width: 250px;
+    margin: 0;
+    padding: 1em;
+    height: 520px
+}
+
+div.note-content {
+  border-right:groove lightgray;
+  padding: 1em;
+  height: 520px;
+  overflow: hidden;
+
+}
+label {
+  margin-bottom:5px;
+  margin-right: 5px;
+}
+
+</style>
+</head>
+
+<body>
+  <div class="container">
+<header>  SIMPLE NOTES</header>
+  <nav>
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+         <table >
+        <col width="130">
+        <tr>
+          <th>Text Notes   </th>
+          <th> <a href="#" id ="textNote" onclick="addNewTextNote()"><span class="glyphicon glyphicon-plus"></span>  </a> </th>
+         </tr>
+      </table>
+    </div>
+
+      <div class="panel-body">
+    <table>
+        <col width="130">
+        <tbody id="countries">
+        </tbody>
+    </table>
+    </div>
+        </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+         <table >
+        <col width="130">
+        <tr>
+            <th >Photo Notes</th>
+          <th>  <a href="#" id ="photoNote" onclick="addNewPhotoNote()"><span class="glyphicon glyphicon-plus" ></span>  </a> </th>
+        </tr>
+      </table>
+    </div>
+      <div class="panel-body">
+    <table>
+        <col width="130">
+        <tbody id="photo-p">
+        </tbody>
+    </table>
+    </div>
+        </div>
+  </nav>
+
+<div class="note-content">
+  <form id="save" action="javascript:void(0);" method="POST" onsubmit="Add()"></form>
+</div>
+<footer> SIMPLE NOTES</footer>
+
+<script>
+// Define the Note constructor
+
+var Note = function(titl, comment) {
+
+  this.titl = titl;
+  this.comment= comment;
+};
+
+
+// Add a couple of methods to Person.prototype
+
+Note.prototype.getTitle = function(){
+  return this.titl;
+};
+
+
+Note.prototype.getcomment = function(){
+     return this.comment;
+};
+
+
+function photoNote(titl,comment) {
+    this.titl = titl;
+    this.comment= comment;
+  }
+  photoNote.prototype = Object.create(Note.prototype);
+
+  photoNote.prototype.constructor = photoNote;
+
+ photoNote.prototype.getcomment = function(){
+    var c =  this.comment;
+    return c.toString();
+  };
+
+
+
+
+
+  var arr = [];
+  var photoArr= [];
+
+  arr.push(new Note('note zero','comment zero'));
+  arr.push(new Note('note one','comment one'));
+  arr.push(new Note('note two','comment two'));
+
+   function FetchAll() {
+    let data = '';
+    let i = 0;
+    if (arr.length > 0) {
+        arr.forEach((Note) =>{
+        data += '<td><a href="#"onclick = "Edit(' + i + ')" >' + truncateText(Note.getTitle());+'</a></td> '
+        data+='<td><a href="#" ><small><span class="glyphicon glyphicon-trash"  onclick="Delete(' + i + ')"></span></small> </td>'
+        data += ' <p>'+truncateText(Note.getcomment()+"  ")+'</p> </td></tr>';
+        i++;
+    });  }
+    document.getElementById('countries').innerHTML = data;
+
+  };
+
+
+  function truncateText(selector) {
+
+    if (selector.length > 15)
+        return  selector.substr(0,15) + '...';
+      else {
+       return selector;
+}};
+
+
+   function bulidTextNoteForm(){
+
+      let textform = ' <label><input id ="title" type="text" name="name" placeholder="New Title">'
+      +'</label><label><input type="submit" value="Save"></label><br>'
+      +' <label><textarea  id="textarea" rows="21" cols="68" > </textarea> </label><br>'
+
+       document.getElementById('save').innerHTML = textform;
+   };
+
+   function buildPhotoNoteForm(){
+
+     let photoform = ' <label><input id ="title"type="text" name="name" placeholder="New Title" >'
+     + ' <label><button >Save</button></label> <br>'
+     + '<label for=""> <input id="inputFileToLoad" type="file" onchange="encodeImageFileAsURL();"/> </label><br>'
+     +'<label for="">  <img id="imgTest" src="" width = "400" hight ="400"></img> </label>';
+
+      document.getElementById('save').innerHTML = photoform;
+
+   }
+
+
+     function addNewTextNote(){
+      bulidTextNoteForm();
+       Add();
+      };
+
+    function Add(){
+
+    var note = document.getElementById('textarea').value;
+    var t = document.getElementById('title').value;
+
+    if (note) {
+      // Add the new value
+     arr.push(new Note (t,note));
+      // Reset input value
+      document.getElementById('title').value = '';
+      document.getElementById('textarea').value='';
+      // Dislay the new list
+     FetchAll();
+    }
+
+}
+
+    function FetchAllphoto(){
+      let data = '';
+      let i = 0;
+      if (photoArr.length > 0) {
+          photoArr.forEach((photoNote) =>{
+          data += '<td><h><a href="#"onclick = "EditPhoto(' + i + ')" >' +
+           truncateText(photoNote.getTitle());+'</a></h></td> '
+          data+='<td><a href="#" ><small><span class="glyphicon glyphicon-trash"  onclick="DeletePhoto(' + i +
+          ')"></span></small> </td></tr>';
+          i++;
+         });  }
+      document.getElementById('photo-p').innerHTML = data;
+
+    }
+  var srcData;
+
+
+     function Edit (item) {
+    bulidTextNoteForm();
+    let commentElm= document.getElementById('textarea');
+    let titleElm = document.getElementById('title');
+    // Display value in the field
+    commentElm.value = this.arr[item].getcomment();
+       titleElm.value =this.arr[item].getTitle();
+    document.getElementById('save').onsubmit = function() {
+      // Get value
+      let note = commentElm.value;
+      let  t= titleElm.value;
+      if (note) {
+              // Edit value
+        self.arr.splice(item, 1, new Note(t,note));
+         console.log( arr.length);
+          commentElm.value= '';
+          titleElm.value= '';
+        // Display the new list
+        self.FetchAll();
+    }
+  }
+};
+
+   function addNewPhotoNote(){
+
+    buildPhotoNoteForm();
+
+    document.getElementById('save').onsubmit = function() {
+      let titleElm = document.getElementById('title');
+      let photoTitle =titleElm.value;
+      let urlData = document.getElementById('imgTest').src;
+        if(urlData){
+          photoArr.push(new photoNote(photoTitle,srcData));
+          titleElm.value='';
+          document.getElementById('imgTest').src='';
+        // Dislay the new list
+        FetchAllphoto();
+  }
+ };
+};
+     function encodeImageFileAsURL() {
+
+      var filesSelected = document.getElementById("inputFileToLoad").files;
+
+      if (filesSelected.length > 0) {
+        var fileToLoad = filesSelected[0];
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent) {
+          srcData = fileLoadedEvent.target.result; // <--- data: base64
+          document.getElementById('imgTest').src = srcData;
+
+        }
+        fileReader.readAsDataURL(fileToLoad);
+      }
+    };
+
+
+function EditPhoto(item){
+  buildPhotoNoteForm();
+  document.getElementById("imgTest").src=  photoArr[item].getcomment();
+  document.getElementById('title').value= photoArr[item].getTitle();
+
+  document.getElementById('save').onsubmit = function() {
+
+  }};
+
+  function Delete(item) {
+  // Delete the current row
+  this.arr.splice(item, 1);
+  document.getElementById('textarea').value='';
+  document.getElementById('title').value='';
+  // Display the new list
+  this.FetchAll();
+
+};
+FetchAll();
+bulidTextNoteForm();
+
+</script>
+
+</body>
+
 </html>
